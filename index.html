@@ -4,7 +4,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Radio App</title>
+	<title>Radios Cali</title>
 	<style>
 		body {
 			background-image: url('fondo.gif');
@@ -91,16 +91,16 @@
 			padding: 10px;
 		}
 	</style>
+	<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 
 <body>
 	<div id="radioPlayer">
 		<div id="radioTitle">
-			<p id="frequency">Frecuencia</p>
-			<p id="stationName">Nombre de la emisora</p>
-			<img id="radioLogo" src="" alt="Logo de la emisora">
-			<audio id="audioPlayer" controls autoplay>
-				<source src="" type="audio/mpeg">
+			<p id="frequency">Cargando Frecuencia...</p>
+			<p id="stationName">Cargando Emisora...</p>
+			<img id="radioLogo" src="loading-animated.gif" alt="Logo de la emisora">
+			<audio id="audioPlayer" controls controlsList="nodownload" autoplay loop>
 				Tu navegador no soporta el elemento de audio.
 			</audio>
 			<div id="radioControls">
@@ -108,8 +108,10 @@
 				<button id="nextStation">Siguiente</button>
 			</div>
 			<br>
-			<p>¿No se escucha?¿Que emisora Falta?</p>
-			<button id="visitWebsite">¡Reportar!</button>
+			<p>¿No se escucha? ¿Qué emisora falta?</p>
+			<button id="visitWebsite1">¡Reportar!</button>
+			<br>
+			<button id="visitWebsite2">Grabaciones</button>
 			<br>
 			<div id="chat">
 				<p>Chat</p>
@@ -121,77 +123,107 @@
 				<button id="toggleExternalSite">(Mostrar/Ocultar)</button>
 			</div>
 		</div>
+	</div>
 
-		<script>
-			// Lista de emisoras
-			var emisoras = [
-				{ nombre: "La Clave 87.5", streamURL: "https://stream.integracionvirtual.com/proxy/central24radio/stream", logoURL: "https://laclave875.com.co/wp-content/uploads/2024/02/logo-la-clave.png", frecuencia: "87.5 FM" },
-				{ nombre: "Clásica 88.5", streamURL: "https://s47.myradiostream.com/:16492/listen.mp3", logoURL: "https://static.wixstatic.com/media/dbc620_3a0e26fb13bf4b969a93ab9b33cee9bf~mv2.png", frecuencia: "88.5 FM" },
-				{ nombre: "La Máxima", streamURL: "https://portal.redsonoraradio.net/cloud/audiofiles/uB6aIVJSYYnzjFbbS2FbhWATZq7MWSRutKkD1zgb.mp3", logoURL: "https://lamaximaradio.com/wp-content/uploads/2018/12/cropped-logo_la_maxima_medio-4.png", frecuencia: "89.1 FM" },
-				{ nombre: "Radio Tiempo", streamURL: "https://24493.live.streamtheworld.com/RT_CALIAAC_SC", logoURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Radio_Tiempo_logo.svg/2560px-Radio_Tiempo_logo.svg.png", frecuencia: "89.5 FM" },
-				{ nombre: "Caracol Radio", streamURL: "https://27363.live.streamtheworld.com/CR_CALIAAC.aac", logoURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Caracol_Radio_logo.svg/3440px-Caracol_Radio_logo.svg.png", frecuencia: "90.5 FM" },
-				{ nombre: "La Primerisima", streamURL: "http://163.172.209.91:9146/stream", logoURL: "https://laprimerisimaradio.com/wp-content/uploads/2022/10/logoheader-1.png", frecuencia: "91.0 FM" },
-				{ nombre: "Blu Radio", streamURL: "https://26593.live.streamtheworld.com/BLU_CALI_ADP.aac", logoURL: "https://upload.wikimedia.org/wikipedia/commons/a/ae/Logo_oficial_de_Blu_Radio.png", frecuencia: "91.5" },
-				{ nombre: "La Mega", streamURL: "https://mdstrm.com/audio/632cb764aa9ace684913bf26/live.m3u8", logoURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/La_Mega_%28Colombia%29_logo.svg/2560px-La_Mega_%28Colombia%29_logo.svg.png", frecuencia: "92.5 FM" },
-				{ nombre: "Tropicana", streamURL: "https://24283.live.streamtheworld.com/TR_CALIAAC_SC", logoURL: "https://upload.wikimedia.org/wikipedia/commons/f/f7/Tropicana_Colombia_logo.png", frecuencia: "93.1 FM" },
-				{ nombre: "W Radio", streamURL: "https://24253.live.streamtheworld.com/WRADIO_SC", logoURL: "https://upload.wikimedia.org/wikipedia/commons/a/ac/W_Radio_logo.png", frecuencia: "95.5 FM" },
-				{ nombre: "La Cheverisima", streamURL: "https://cloudstream2032.conectarhosting.com/8098/stream", logoURL: "https://lacheverisima.co/wp-content/uploads/2023/09/logo.png", frecuencia: "96.1 FM" },
-				{ nombre: "La X", streamURL: "https://tupanel.info:2000/stream/2digitalradioHDsslLIVE040", logoURL: "https://www.laxcali.com/static/images/img-logo-la-x.b0c83d6feae7.svg", frecuencia: "96.5 FM" },
-				{ nombre: "Radio Planeta", streamURL: "https://sp4.colombiatelecom.com.co/8098/stream", logoURL: "http://www.radioplaneta.com.co/images/logo.png", frecuencia: "96.9 FM" },
-				{ nombre: "El Sol", streamURL: "https://mdstrm.com/audio/632cb6ecaa9ace684913bf19/live.m3u8", logoURL: "https://static.wordpress.rcnradio.com/elsol/logo.webp", frecuencia: "97.5 FM" },
-				{ nombre: "RCN Radio", streamURL: "https://mdstrm.com/audio/632cb829b70c350af5bc2908/live.m3u8", logoURL: "https://cdn-profiles.tunein.com/s144475/images/logog.png", frecuencia: "98.0 FM" },
-				{ nombre: "La FM", streamURL: "https://mdstrm.com/audio/632cb714202d6801a3178462/live.m3u8", logoURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/La_FM_logo.svg/2560px-La_FM_logo.svg.png", frecuencia: "98.5 FM" },
-				{ nombre: "Boom FM", streamURL: "https://streamming.dobitsoluciones.com:7030/live", logoURL: "https://boom991fm.com/wp-content/uploads/2019/02/cropped-boonnuevologo-1.png", frecuencia: "99.1 FM" },
-				{ nombre: "Click Latino", streamURL: "https://radiohd.streaminghd.co:7895/stream", logoURL: "https://static.mytuner.mobi/media/tvos_radios/td6n5dnpvunv.jpg", frecuencia: "99.5 FM" },
-				{ nombre: "Colombia Estereo", streamURL: "https://radiolatina.info/8154/stream", logoURL: "https://static.mytuner.mobi/media/tvos_radios/260/colombia-estereo.7c38bff2.png", frecuencia: "99.9 FM" },
-				{ nombre: "Radio Uno", streamURL: "https://mdstrm.com/audio/632cb7f6b70c350af5bc2903/live.m3u8", logoURL: "https://pbs.twimg.com/profile_images/1146531874430435328/waK7c6jW_400x400.png", frecuencia: "100.5 FM" },
-				{ nombre: "Mix Radio", streamURL: "https://24373.live.streamtheworld.com/MIX_CALIAAC_SC", logoURL: "https://static.mytuner.mobi/media/tvos_radios/c8NuFYraaF.png", frecuencia: "101.5 FM" },
-				{ nombre: "Radio Policia Nacional", streamURL: "http://190.255.40.78:4445/cali", logoURL: "https://static.mytuner.mobi/media/tvos_radios/wdhdkrw2bxub.jpg", frecuencia: "102.0 FM" },
-				{ nombre: "Candela Estereo", streamURL: "https://27573.live.streamtheworld.com/CANDELA_CALIAAC", logoURL: "https://static.mytuner.mobi/media/tvos_radios/eRdeaC2HCe.png", frecuencia: "102.5 FM" },
-				{ nombre: "Olimpica Estereo", streamURL: "https://27263.live.streamtheworld.com/OLP_CALIAAC_SC", logoURL: "https://static.mytuner.mobi/media/tvos_radios/pdm67PU6ad.png", frecuencia: "104.5 FM" },
-				{ nombre: "Univalle Estereo", streamURL: "http://uv-stereo.univalle.edu.co:8000/envivo.mp3", logoURL: "https://emisora.univalle.edu.co/wp-content/uploads/2014/12/Univalle_Estereo.jpg", frecuencia: "105.3 FM" },
-				{ nombre: "Bésame Radio", streamURL: "https://24153.live.streamtheworld.com/BESAME_CALIAAC_SC", logoURL: "https://i1.sndcdn.com/avatars-dzyZmguJAEzOZ6GO-kzDE0Q-t500x500.jpg", frecuencia: "106.5 FM" },
-				{ nombre: "Javeriana Estereo", streamURL: "https://radio06.cehis.net:9002/stream", logoURL: "https://cdn-profiles.tunein.com/s168524/images/logog.png", frecuencia: "107.5 FM" },
-				// Agrega más emisoras según sea necesario
-			];
+	<script>
+		// Lista de emisoras
+		var emisoras = [
+			{ nombre: "La Clave 87.5", streamURL: "https://stream.integracionvirtual.com/proxy/central24radio/stream", logoURL: "https://laclave875.com.co/wp-content/uploads/2024/02/logo-la-clave.png", frecuencia: "87.5 FM" },
+			{ nombre: "Clásica 88.5", streamURL: "https://s47.myradiostream.com/:16492/listen.mp3", logoURL: "https://static.wixstatic.com/media/dbc620_3a0e26fb13bf4b969a93ab9b33cee9bf~mv2.png", frecuencia: "88.5 FM" },
+			{ nombre: "La Máxima", streamURL: "https://portal.redsonoraradio.net/cloud/audiofiles/uB6aIVJSYYnzjFbbS2FbhWATZq7MWSRutKkD1zgb.mp3", logoURL: "https://lamaximaradio.com/wp-content/uploads/2018/12/cropped-logo_la_maxima_medio-4.png", frecuencia: "89.1 FM" },
+			{ nombre: "Radio Tiempo", streamURL: "https://24493.live.streamtheworld.com/RT_CALIAAC_SC", logoURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Radio_Tiempo_logo.svg/2560px-Radio_Tiempo_logo.svg.png", frecuencia: "89.5 FM" },
+			{ nombre: "Caracol Radio", streamURL: "https://27363.live.streamtheworld.com/CR_CALIAAC.aac", logoURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Caracol_Radio_logo.svg/3440px-Caracol_Radio_logo.svg.png", frecuencia: "90.5 FM" },
+			{ nombre: "La Primerisima", streamURL: "http://163.172.209.91:9146/stream", logoURL: "https://laprimerisimaradio.com/wp-content/uploads/2022/10/logoheader-1.png", frecuencia: "91.0 FM" },
+			{ nombre: "Blu Radio", streamURL: "https://26593.live.streamtheworld.com/BLU_CALI_ADP.aac", logoURL: "https://upload.wikimedia.org/wikipedia/commons/a/ae/Logo_oficial_de_Blu_Radio.png", frecuencia: "91.5" },
+			{ nombre: "La Mega", streamURL: "https://mdstrm.com/audio/632cb764aa9ace684913bf26/live.m3u8", logoURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/La_Mega_%28Colombia%29_logo.svg/2560px-La_Mega_%28Colombia%29_logo.svg.png", frecuencia: "92.5 FM" },
+			{ nombre: "Tropicana", streamURL: "https://24283.live.streamtheworld.com/TR_CALIAAC_SC", logoURL: "https://upload.wikimedia.org/wikipedia/commons/f/f7/Tropicana_Colombia_logo.png", frecuencia: "93.1 FM" },
+			{ nombre: "W Radio", streamURL: "https://24253.live.streamtheworld.com/WRADIO_SC", logoURL: "https://upload.wikimedia.org/wikipedia/commons/a/ac/W_Radio_logo.png", frecuencia: "95.5 FM" },
+			{ nombre: "La Cheverisima", streamURL: "https://cloudstream2032.conectarhosting.com/8098/stream", logoURL: "https://lacheverisima.co/wp-content/uploads/2023/09/logo.png", frecuencia: "96.1 FM" },
+			{ nombre: "La X", streamURL: "https://tupanel.info:2000/stream/2digitalradioHDsslLIVE040", logoURL: "https://www.laxcali.com/static/images/img-logo-la-x.b0c83d6feae7.svg", frecuencia: "96.5 FM" },
+			{ nombre: "Radio Planeta", streamURL: "https://sp4.colombiatelecom.com.co/8098/stream", logoURL: "https://cdn-profiles.tunein.com/s134027/images/logog.png", frecuencia: "96.9 FM" },
+			{ nombre: "El Sol", streamURL: "https://mdstrm.com/audio/632cb6ecaa9ace684913bf19/live.m3u8", logoURL: "https://static.wordpress.rcnradio.com/elsol/logo.webp", frecuencia: "97.5 FM" },
+			{ nombre: "RCN Radio", streamURL: "https://mdstrm.com/audio/632cb829b70c350af5bc2908/live.m3u8", logoURL: "https://cdn-profiles.tunein.com/s144475/images/logog.png", frecuencia: "98.0 FM" },
+			{ nombre: "La FM", streamURL: "https://mdstrm.com/audio/632cb714202d6801a3178462/live.m3u8", logoURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/La_FM_logo.svg/2560px-La_FM_logo.svg.png", frecuencia: "98.5 FM" },
+			{ nombre: "Boom FM", streamURL: "https://streamming.dobitsoluciones.com:7030/live", logoURL: "https://boom991fm.com/wp-content/uploads/2019/02/cropped-boonnuevologo-1.png", frecuencia: "99.1 FM" },
+			{ nombre: "Click Latino", streamURL: "https://radiohd.streaminghd.co:7895/stream", logoURL: "https://static.mytuner.mobi/media/tvos_radios/td6n5dnpvunv.jpg", frecuencia: "99.5 FM" },
+			{ nombre: "Colombia Estereo", streamURL: "https://radiolatina.info/8154/stream", logoURL: "https://static.mytuner.mobi/media/tvos_radios/260/colombia-estereo.7c38bff2.png", frecuencia: "99.9 FM" },
+			{ nombre: "Radio Uno", streamURL: "https://mdstrm.com/audio/632cb7f6b70c350af5bc2903/live.m3u8", logoURL: "https://pbs.twimg.com/profile_images/1146531874430435328/waK7c6jW_400x400.png", frecuencia: "100.5 FM" },
+			{ nombre: "Mix Radio", streamURL: "https://24373.live.streamtheworld.com/MIX_CALIAAC_SC", logoURL: "https://static.mytuner.mobi/media/tvos_radios/c8NuFYraaF.png", frecuencia: "101.5 FM" },
+			{ nombre: "Radio Policia Nacional", streamURL: "https://play12.tikast.com:20002/stream", logoURL: "https://static.mytuner.mobi/media/tvos_radios/wdhdkrw2bxub.jpg", frecuencia: "102.0 FM" },
+			{ nombre: "Candela Estereo", streamURL: "https://24153.live.streamtheworld.com/CANDELA_CALIAAC/HLS/playlist.m3u8", logoURL: "https://static.mytuner.mobi/media/tvos_radios/eRdeaC2HCe.png", frecuencia: "102.5 FM" },
+			{ nombre: "Olimpica Estereo", streamURL: "https://27263.live.streamtheworld.com/OLP_CALIAAC_SC", logoURL: "https://static.mytuner.mobi/media/tvos_radios/pdm67PU6ad.png", frecuencia: "104.5 FM" },
+			{ nombre: "Univalle Estereo", streamURL: "http://uv-stereo.univalle.edu.co:8000/envivo.mp3", logoURL: "https://pbs.twimg.com/profile_images/1818311251690180608/pEKak24G.jpg", frecuencia: "105.3 FM" },
+			{ nombre: "Bésame Radio", streamURL: "https://24153.live.streamtheworld.com/BESAME_CALIAAC_SC", logoURL: "https://i1.sndcdn.com/avatars-dzyZmguJAEzOZ6GO-kzDE0Q-t500x500.jpg", frecuencia: "106.5 FM" },
+			{ nombre: "Javeriana Estereo", streamURL: "https://radio06.cehis.net:9002/stream", logoURL: "https://cdn-profiles.tunein.com/s168524/images/logog.png", frecuencia: "107.5 FM" },
+			// Agrega más emisoras según sea necesario
+		];
 
-			var currentIndex = 0;
-			var audioPlayer = document.getElementById('audioPlayer');
-			var frequencyParagraph = document.getElementById('frequency');
-			var stationNameParagraph = document.getElementById('stationName');
-			var radioLogo = document.getElementById('radioLogo');
+		var currentIndex = 0;
+		var audioPlayer = document.getElementById('audioPlayer');
+		var frequencyParagraph = document.getElementById('frequency');
+		var stationNameParagraph = document.getElementById('stationName');
+		var radioLogo = document.getElementById('radioLogo');
+		var hls = null;
 
-			function playStation(index) {
-				audioPlayer.src = emisoras[index].streamURL;
-				frequencyParagraph.textContent = emisoras[index].frecuencia;
-				stationNameParagraph.textContent = emisoras[index].nombre;
-				radioLogo.src = emisoras[index].logoURL;
+		function playStation(index) {
+			var emisora = emisoras[index];
+			var streamURL = emisora.streamURL;
+			var isM3U8 = streamURL.endsWith('.m3u8');
+
+			if (hls) {
+				hls.destroy();
+				hls = null;
+			}
+
+			if (isM3U8) {
+				if (Hls.isSupported()) {
+					hls = new Hls();
+					hls.loadSource(streamURL);
+					hls.attachMedia(audioPlayer);
+					hls.on(Hls.Events.MANIFEST_PARSED, function () {
+						audioPlayer.play();
+					});
+				} else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+					audioPlayer.src = streamURL;
+					audioPlayer.play();
+				}
+			} else {
+				audioPlayer.src = streamURL;
 				audioPlayer.play();
 			}
 
+			frequencyParagraph.textContent = emisora.frecuencia;
+			stationNameParagraph.textContent = emisora.nombre;
+			radioLogo.src = emisora.logoURL;
+		}
+
+		playStation(currentIndex);
+
+		document.getElementById('prevStation').addEventListener('click', function () {
+			currentIndex = (currentIndex - 1 + emisoras.length) % emisoras.length;
 			playStation(currentIndex);
+		});
 
-			document.getElementById('prevStation').addEventListener('click', function () {
-				currentIndex = (currentIndex - 1 + emisoras.length) % emisoras.length;
-				playStation(currentIndex);
-			});
+		document.getElementById('nextStation').addEventListener('click', function () {
+			currentIndex = (currentIndex + 1) % emisoras.length;
+			playStation(currentIndex);
+		});
 
-			document.getElementById('nextStation').addEventListener('click', function () {
-				currentIndex = (currentIndex + 1) % emisoras.length;
-				playStation(currentIndex);
-			});
+		// Agregar evento de clic para el botón de visitar el sitio web
+		document.getElementById('visitWebsite1').addEventListener('click', function () {
+			window.location.href = "go:Reportar";
+		});
 
-			// Agregar evento de clic para el botón de visitar el sitio web
-			document.getElementById('visitWebsite').addEventListener('click', function () {
-				window.location.href = "go:Reportar";
-			});
+		// Agregar evento de clic para el botón de visitar el sitio web
+		document.getElementById('visitWebsite2').addEventListener('click', function () {
+			window.location.href = "grabaciones.html";
+		});
 
-			// Mostrar u ocultar el sitio web externo
-			document.getElementById('toggleExternalSite').addEventListener('click', function () {
-				var externalSiteContainer = document.getElementById('externalSiteContainer');
-				externalSiteContainer.style.display = (externalSiteContainer.style.display === 'none') ? 'block' : 'none';
-			});
-		</script>
+		// Mostrar u ocultar el sitio web externo
+		document.getElementById('toggleExternalSite').addEventListener('click', function () {
+			var externalSiteContainer = document.getElementById('externalSiteContainer');
+			externalSiteContainer.style.display = (externalSiteContainer.style.display === 'none') ? 'block' : 'none';
+		});
+	</script>
 </body>
-
 </html>
